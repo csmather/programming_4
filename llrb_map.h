@@ -56,12 +56,12 @@ class LLRB_map {
 };
 
 template <typename K, typename V>
-unsigned int LLRB_map<K>::Size() {
+unsigned int LLRB_map<K,V>::Size() {
   return cur_size;
 }
 
 template <typename K, typename V>
-typename LLRB_map<K>::Node* LLRB_map<K>::Get(LLRB_map<K>::Node* n,
+typename LLRB_map<K,V>::Node* LLRB_map<K,V>::Get(LLRB_map<K,V>::Node* n,
                                              const K &key) {
   while (n) {
     if (key == n->key)
@@ -76,24 +76,24 @@ typename LLRB_map<K>::Node* LLRB_map<K>::Get(LLRB_map<K>::Node* n,
 }
 
 template <typename K, typename V>
-bool LLRB_map<K>::Contains(const K &key) {
+bool LLRB_map<K,V>::Contains(const K &key) {
   return Get(root.get(), key) != nullptr;
 }
 
 template <typename K, typename V>
-const K& LLRB_map<K>::Max(void) {
+const K& LLRB_map<K,V>::Max(void) {
   Node *n = root.get();
   while (n->right) n = n->right.get();
   return n->key;
 }
 
 template <typename K, typename V>
-const K& LLRB_map<K>::Min(void) {
+const K& LLRB_map<K,V>::Min(void) {
   return Min(root.get())->key;
 }
 
 template <typename K, typename V>
-typename LLRB_map<K>::Node* LLRB_map<K>::Min(Node *n) {
+typename LLRB_map<K,V>::Node* LLRB_map<K,V>::Min(Node *n) {
   if (n->left)
     return Min(n->left.get());
   else
@@ -101,20 +101,20 @@ typename LLRB_map<K>::Node* LLRB_map<K>::Min(Node *n) {
 }
 
 template <typename K, typename V>
-bool LLRB_map<K>::IsRed(Node *n) {
+bool LLRB_map<K,V>::IsRed(Node *n) {
   if (!n) return false;
   return (n->color == RED);
 }
 
 template <typename K, typename V>
-void LLRB_map<K>::FlipColors(Node *n) {
+void LLRB_map<K,V>::FlipColors(Node *n) {
   n->color = !n->color;
   n->left->color = !n->left->color;
   n->right->color = !n->right->color;
 }
 
 template <typename K, typename V>
-void LLRB_map<K>::RotateRight(std::unique_ptr<Node> &prt) {
+void LLRB_map<K,V>::RotateRight(std::unique_ptr<Node> &prt) {
   std::unique_ptr<Node> chd = std::move(prt->left);
   prt->left = std::move(chd->right);
   chd->color = prt->color;
@@ -124,7 +124,7 @@ void LLRB_map<K>::RotateRight(std::unique_ptr<Node> &prt) {
 }
 
 template <typename K, typename V>
-void LLRB_map<K>::RotateLeft(std::unique_ptr<Node> &prt) {
+void LLRB_map<K,V>::RotateLeft(std::unique_ptr<Node> &prt) {
   std::unique_ptr<Node> chd = std::move(prt->right);
   prt->right = std::move(chd->left);
   chd->color = prt->color;
@@ -134,7 +134,7 @@ void LLRB_map<K>::RotateLeft(std::unique_ptr<Node> &prt) {
 }
 
 template <typename K, typename V>
-void LLRB_map<K>::FixUp(std::unique_ptr<Node> &n) {
+void LLRB_map<K,V>::FixUp(std::unique_ptr<Node> &n) {
   // Rotate left if there is a right-leaning red node
   if (IsRed(n->right.get()) && !IsRed(n->left.get()))
     RotateLeft(n);
@@ -147,7 +147,7 @@ void LLRB_map<K>::FixUp(std::unique_ptr<Node> &n) {
 }
 
 template <typename K, typename V>
-void LLRB_map<K>::MoveRedRight(std::unique_ptr<Node> &n) {
+void LLRB_map<K,V>::MoveRedRight(std::unique_ptr<Node> &n) {
   FlipColors(n.get());
   if (IsRed(n->left->left.get())) {
     RotateRight(n);
@@ -156,7 +156,7 @@ void LLRB_map<K>::MoveRedRight(std::unique_ptr<Node> &n) {
 }
 
 template <typename K, typename V>
-void LLRB_map<K>::MoveRedLeft(std::unique_ptr<Node> &n) {
+void LLRB_map<K,V>::MoveRedLeft(std::unique_ptr<Node> &n) {
   FlipColors(n.get());
   if (IsRed(n->right->left.get())) {
     RotateRight(n->right);
@@ -166,7 +166,7 @@ void LLRB_map<K>::MoveRedLeft(std::unique_ptr<Node> &n) {
 }
 
 template <typename K, typename V>
-void LLRB_map<K>::DeleteMin(std::unique_ptr<Node> &n) {
+void LLRB_map<K,V>::DeleteMin(std::unique_ptr<Node> &n) {
   // No left child, min is 'n'
   if (!n->left) {
     // Remove n
@@ -183,7 +183,7 @@ void LLRB_map<K>::DeleteMin(std::unique_ptr<Node> &n) {
 }
 
 template <typename K, typename V>
-void LLRB_map<K>::Remove(const K &key) {
+void LLRB_map<K,V>::Remove(const K &key) {
   if (!Contains(key))
     return;
   Remove(root, key);
@@ -193,7 +193,7 @@ void LLRB_map<K>::Remove(const K &key) {
 }
 
 template <typename K, typename V>
-void LLRB_map<K>::Remove(std::unique_ptr<Node> &n, const K &key) {
+void LLRB_map<K,V>::Remove(std::unique_ptr<Node> &n, const K &key) {
   // Key not found
   if (!n) return;
 
@@ -230,14 +230,14 @@ void LLRB_map<K>::Remove(std::unique_ptr<Node> &n, const K &key) {
 }
 
 template <typename K, typename V>
-void LLRB_map<K>::Insert(const K &key) {
+void LLRB_map<K,V>::Insert(const K &key) {
   Insert(root, key);
   cur_size++;
   root->color = BLACK;
 }
 
 template <typename K, typename V>
-void LLRB_map<K>::Insert(std::unique_ptr<Node> &n, const K &key) {
+void LLRB_map<K,V>::Insert(std::unique_ptr<Node> &n, const K &key) {
   if (!n)
     n = std::unique_ptr<Node>(new Node{key, RED});
   else if (key < n->key)
@@ -251,13 +251,13 @@ void LLRB_map<K>::Insert(std::unique_ptr<Node> &n, const K &key) {
 }
 
 template <typename K, typename V>
-void LLRB_map<K>::Print() {
+void LLRB_map<K,V>::Print() {
   Print(root.get());
   std::cout << std::endl;
 }
 
 template <typename K, typename V>
-void LLRB_map<K>::Print(Node *n) {
+void LLRB_map<K,V>::Print(Node *n) {
   if (!n) return;
   Print(n->left.get());
   std::cout << "<" << n->key << "> ";
