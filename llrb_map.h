@@ -18,7 +18,7 @@ class LLRB_map {
   // Return min key in tree
   const K& Min();
   // Insert @key in tree
-  void Insert(const K &key);
+  void Insert(const K &key, const V &value);
   // Remove @key from tree
   void Remove(const K &key);
   // Print tree in-order
@@ -43,7 +43,8 @@ class LLRB_map {
 
   // Recursive helper methods
   Node* Min(Node *n);
-  void Insert(std::unique_ptr<Node> &n, const K &key);
+  void Insert(std::unique_ptr<Node> &n,
+              const K &key, const V &value);
   void Remove(std::unique_ptr<Node> &n, const K &key);
   void Print(Node *n);
 
@@ -230,6 +231,7 @@ void LLRB_map<K,V>::Remove(std::unique_ptr<Node> &n, const K &key) {
       Node *n_min = Min(n->right.get());
       // Copy content from min node
       n->key = n_min->key;
+      n->value = n_min->value;
       // Delete min node recursively
       DeleteMin(n->right);
     } else {
@@ -241,20 +243,21 @@ void LLRB_map<K,V>::Remove(std::unique_ptr<Node> &n, const K &key) {
 }
 
 template <typename K, typename V>
-void LLRB_map<K,V>::Insert(const K &key) {
-  Insert(root, key);
+void LLRB_map<K,V>::Insert(const K &key, const V &value) {
+  Insert(root, key, value);
   cur_size++;
   root->color = BLACK;
 }
 
 template <typename K, typename V>
-void LLRB_map<K,V>::Insert(std::unique_ptr<Node> &n, const K &key) {
+void LLRB_map<K,V>::Insert(std::unique_ptr<Node> &n,
+                           const K &key, const V &value) {
   if (!n)
-    n = std::unique_ptr<Node>(new Node{key, RED});
+    n = std::unique_ptr<Node>(new Node{key, value, RED});
   else if (key < n->key)
-    Insert(n->left, key);
+    Insert(n->left, key, value);
   else if (key > n->key)
-    Insert(n->right, key);
+    Insert(n->right, key, value);
   else
     throw std::runtime_error("Key already inserted");
 
