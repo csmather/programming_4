@@ -23,11 +23,14 @@ class LLRB_map {
   void Remove(const K &key);
   // Print tree in-order
   void Print();
+  // Returns value associated with key
+  const V& Get(const K &key);
 
  private:
   enum Color { RED, BLACK };
   struct Node{
     K key;
+    V value;
     bool color;
     std::unique_ptr<Node> left;
     std::unique_ptr<Node> right;
@@ -59,6 +62,14 @@ template <typename K, typename V>
 unsigned int LLRB_map<K,V>::Size() {
   return cur_size;
 }
+
+template <typename K, typename V>
+const V& LLRB_map<K,V>::Get(const K &key) {
+  Node *n = Get(root.get(), key);
+  if (!n)
+    throw std::runtime_error("Key not found");
+  return n->value;
+};
 
 template <typename K, typename V>
 typename LLRB_map<K,V>::Node* LLRB_map<K,V>::Get(LLRB_map<K,V>::Node* n,
