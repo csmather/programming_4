@@ -1,5 +1,5 @@
-#ifndef LLRB_map_H_
-#define LLRB_map_H_
+#ifndef LLRB_MAP_H_
+#define LLRB_MAP_H_
 
 #include <iostream>
 #include <memory>
@@ -278,4 +278,4 @@ void LLRB_map<K,V>::Print(Node *n) {
   Print(n->right.get());
 }
 
-#endif  // LLRB_map_H_
+#endif  // LLRB_MAP_H_
