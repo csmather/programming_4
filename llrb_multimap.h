@@ -207,40 +207,50 @@ void LLRB_multimap<K,V>::Remove(const K &key) {
 
 template <typename K, typename V>
 void LLRB_multimap<K,V>::Remove(std::unique_ptr<Node> &n, const K &key) {
-    // Key not found
-    if (!n) return;
+  // Key not found
+  if (!n) return;
 
-    if (key < n->key) {
-        if (!IsRed(n->left.get()) && !IsRed(n->left->left.get()))
-            MoveRedLeft(n);
-        Remove(n->left, key);
-    } else {
-        if (IsRed(n->left.get()))
-            RotateRight(n);
+  if (key < n->key) {
+    if (!IsRed(n->left.get()) && !IsRed(n->left->left.get()))
+      MoveRedLeft(n);
+    Remove(n->left, key);
+  } else {
+    if (IsRed(n->left.get()))
+      RotateRight(n);
 
-        if (key == n->key && !n->right) {
-            // Remove n
-            n = nullptr;
-            return;
-        }
-
-        if (!IsRed(n->right.get()) && !IsRed(n->right->left.get()))
-            MoveRedRight(n);
-
-        if (key == n->key) {
-            // Find min node in the right subtree
-            Node *n_min = Min(n->right.get());
-            // Copy content from min node
-            n->key = n_min->key;
-            n->value = n_min->value;
-            // Delete min node recursively
-            DeleteMin(n->right);
-        } else {
-            Remove(n->right, key);
-        }
+    if (key == n->key && !n->right) {
+      // Remove n if only one value
+      if (n->values.size() == 1) {
+        n = nullptr;
+        return;
+      } else {
+        n->values.erase(n->values.begin());
+        return;
+      }
     }
 
-    FixUp(n);
+    if (!IsRed(n->right.get()) && !IsRed(n->right->left.get()))
+      MoveRedRight(n);
+
+    if (key == n->key) {
+      // Get rid of first element if >1 value
+      if (n->values.size() != 1) {
+        n->values.erase(n->values.begin());
+        return;
+      }
+      // Find min node in the right subtree
+      Node *n_min = Min(n->right.get());
+      // Copy content from min node
+      n->key = n_min->key;
+      n->values = n_min->values;
+      // Delete min node recursively
+      DeleteMin(n->right);
+    } else {
+      Remove(n->right, key);
+    }
+  }
+
+  FixUp(n);
 }
 
 template <typename K, typename V>
