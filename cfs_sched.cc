@@ -48,7 +48,7 @@ void Scheduler::PrintStatus() {
 
 void Scheduler::RunPrograms() {
     // There are still programs which are running or waiting to be run
-    while (waiting.Size() || running.Size()) {
+    while (current_program || waiting.Size() || running.Size()) {
 
         // If there are tasks that should be launched at the current tick value,
         // add them to the timeline of tasks
