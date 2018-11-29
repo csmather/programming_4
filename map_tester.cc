@@ -9,7 +9,7 @@ int main() {
 	LLRB_map<int, int> set;
 	std::vector<int> keys{2, 18, 42, 43, 51, 54, 74, 93, 99};
 
-	// Try to get from empty tree
+	// Try to use Get() on empty tree
 	try {
 		std::cout << "Get 1 from empty map: "
 		          << set.Get(1) << std::endl;
