@@ -23,6 +23,11 @@ private:
         unsigned int duration;
         unsigned int runtime;
         unsigned int vruntime;
+        };
+    struct ProgramCompare {
+        bool operator()(Program *lhs, Program *rhs) {
+            return lhs->identifier < rhs->identifier;
+        }
     };
 
     Program* current_program = nullptr;
@@ -48,17 +53,24 @@ void Scheduler::PrintStatus() {
 
 void Scheduler::RunPrograms() {
     // There are still programs which are running or waiting to be run
-    while (current_program || waiting.Size() || running.Size()) {
+    while (current_program ||waiting.Size() || running.Size()) {
 
         // If there are tasks that should be launched at the current tick value,
         // add them to the timeline of tasks
+        // The programs will be sorted by identifier before they are inserted
+        std::vector<Program*> programs;
         while (waiting.Contains(tick)) {
             Program* program = waiting.Get(tick);
             // Initialize their virtual runtime to the current global min_vruntime
             program->vruntime = min_vruntime;
-            running.Insert(program->vruntime, program);
+            programs.push_back(program);
             waiting.Remove(tick);
         }
+        std::sort(programs.begin(), programs.end(), ProgramCompare());
+        for (unsigned int i = 0; i < programs.size(); i++) {
+            running.Insert(min_vruntime, programs.at(i));
+        }
+        programs.clear();
 
         // If there are no tasks continue to next tick
         if (!current_program && !running.Size()) {
@@ -123,7 +135,8 @@ void Scheduler::ReadInput(std::ifstream& input) {
             std::cerr << "Error: input file is invalid" << std::endl;
             exit(1);
         }
-        //ptr = std::unique_ptr<Program>(new Program{identifier, start_time, duration, 0, 0});
+        // This line needs to be inserted on Linux, because of differences in eof signals
+        // if (input.eof()) return;
         waiting.Insert(start_time, new Program{identifier, start_time, duration, 0, 0});
     }
 }
@@ -132,7 +145,7 @@ int main(int argc, char* argv[]) {
     // Check correct # of args
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0]
-                  << " <taskfile.dat>" << std::endl;
+                  << " <task_file.dat>" << std::endl;
         exit(1);
     }
     std::ifstream inputFile(argv[1]);
