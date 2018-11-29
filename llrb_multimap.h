@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <algorithm>
 
 template <typename K, typename V>
 class LLRB_multimap {
@@ -26,6 +27,8 @@ public:
     void Print();
     // Returns value associated with key
     const V& Get(const K &key);
+    // Additional method to sort the values in each node
+    void Sort();
 
 private:
     enum Color { RED, BLACK };
@@ -48,6 +51,7 @@ private:
                 const K &key, const V &value);
     void Remove(std::unique_ptr<Node> &n, const K &key);
     void Print(Node *n);
+    void Sort(Node *n);
 
     // Helper methods for the self-balancing
     bool IsRed(Node *n);
@@ -207,50 +211,50 @@ void LLRB_multimap<K,V>::Remove(const K &key) {
 
 template <typename K, typename V>
 void LLRB_multimap<K,V>::Remove(std::unique_ptr<Node> &n, const K &key) {
-  // Key not found
-  if (!n) return;
+    // Key not found
+    if (!n) return;
 
-  if (key < n->key) {
-    if (!IsRed(n->left.get()) && !IsRed(n->left->left.get()))
-      MoveRedLeft(n);
-    Remove(n->left, key);
-  } else {
-    if (IsRed(n->left.get()))
-      RotateRight(n);
-
-    if (key == n->key && !n->right) {
-      // Remove n if only one value
-      if (n->values.size() == 1) {
-        n = nullptr;
-        return;
-      } else {
-        n->values.erase(n->values.begin());
-        return;
-      }
-    }
-
-    if (!IsRed(n->right.get()) && !IsRed(n->right->left.get()))
-      MoveRedRight(n);
-
-    if (key == n->key) {
-      // Get rid of first element if >1 value
-      if (n->values.size() != 1) {
-        n->values.erase(n->values.begin());
-        return;
-      }
-      // Find min node in the right subtree
-      Node *n_min = Min(n->right.get());
-      // Copy content from min node
-      n->key = n_min->key;
-      n->values = n_min->values;
-      // Delete min node recursively
-      DeleteMin(n->right);
+    if (key < n->key) {
+        if (!IsRed(n->left.get()) && !IsRed(n->left->left.get()))
+            MoveRedLeft(n);
+        Remove(n->left, key);
     } else {
-      Remove(n->right, key);
-    }
-  }
+        if (IsRed(n->left.get()))
+            RotateRight(n);
 
-  FixUp(n);
+        if (key == n->key && !n->right) {
+            // Remove n if only one value
+            if (n->values.size() == 1) {
+                n = nullptr;
+                return;
+            } else {
+                n->values.erase(n->values.begin());
+                return;
+            }
+        }
+
+        if (!IsRed(n->right.get()) && !IsRed(n->right->left.get()))
+            MoveRedRight(n);
+
+        if (key == n->key) {
+            // Get rid of first element if >1 value
+            if (n->values.size() != 1) {
+                n->values.erase(n->values.begin());
+                return;
+            }
+            // Find min node in the right subtree
+            Node *n_min = Min(n->right.get());
+            // Copy content from min node
+            n->key = n_min->key;
+            n->values = n_min->values;
+            // Delete min node recursively
+            DeleteMin(n->right);
+        } else {
+            Remove(n->right, key);
+        }
+    }
+
+    FixUp(n);
 }
 
 template <typename K, typename V>
@@ -287,7 +291,7 @@ void LLRB_multimap<K,V>::Print(Node *n) {
     Print(n->left.get());
     std::cout << "<" << n->key << "> " << "<";
     for (unsigned int i = 0; i < n->values.size(); i++) {
-        std::cout << n->values[i] << " ";
+        std::cout << n->values[i]->identifier << " ";
     }
     std::cout << ">" << std::endl;
     Print(n->right.get());
